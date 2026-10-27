@@ -1,8 +1,35 @@
-# PHASE 1 — FastAPI entry point
-# Create the FastAPI app and register the health router without adding a /v1 prefix
-# to /health/live and /health/ready; future business routes belong under /v1.
-# Configure logging and manage engine setup/disposal through app lifespan.
-# Add safe, consistent error responses without leaking secrets or stack traces.
-# Keep startup independent of a live DB so liveness works while readiness reports 503.
-# Do not initialize tables or run migrations; database administration is manual.
-# Acceptance: uvicorn can start the app and serve both health routes.
+import logging
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+
+from apps.api.routes.health import router as health_router
+from src.core.config.logging import configure_logging
+from src.core.config.settings import get_settings
+from src.storage.database import Database
+
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    settings = get_settings()
+    configure_logging(settings.log_level)
+    app.state.settings = settings
+    app.state.database = Database(settings)
+    try:
+        yield
+    finally:
+        await app.state.database.close()
+
+
+app = FastAPI(title="RAG Researcher", version="0.1.0", lifespan=lifespan)
+app.include_router(health_router)
+
+
+@app.exception_handler(Exception)
+async def unexpected_error(request: Request, exc: Exception) -> JSONResponse:
+    # Avoid exception text: external libraries can include connection information.
+    logger.error("Unhandled API error")
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})

@@ -1,10 +1,25 @@
-# PHASE 1 — Project setup (start here)
-# 1. Define the project name, version, description, and Python requirement (>=3.11).
-# 2. Add a build system and package discovery for apps and src, including their
-#    subdirectories. Choose a consistent import strategy and document it.
-# 3. Add only Phase 1 dependencies: FastAPI, uvicorn, Streamlit, pydantic-settings,
-#    SQLAlchemy, and an async PostgreSQL driver such as asyncpg.
-# 4. Add a development dependency group for pytest, pytest-asyncio, and httpx.
-# 5. Configure pytest to discover tests in tests/ and set async mode as needed.
-# 6. Install with your chosen package manager; record resolved versions in a lock file.
-# Acceptance: installation succeeds in a clean virtual environment without Docker.
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag-researcher"
+version = "0.1.0"
+description = "Agentic RAG research workbench"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1", "uvicorn[standard]>=0.30,<1", "streamlit>=1.40,<2",
+  "pydantic-settings>=2.6,<3", "sqlalchemy[asyncio]>=2.0,<3", "asyncpg>=0.30,<1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "pytest-asyncio>=0.24,<2", "httpx>=0.27,<1"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["apps*", "src*"]
+namespaces = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

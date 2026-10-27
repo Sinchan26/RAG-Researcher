@@ -1,7 +1,7 @@
-# PHASE 1 — Streamlit entry point
-# Configure the page and present the project name plus a short Phase 1 status.
-# Add navigation to Ingestion, Chat and Experiments using your chosen Streamlit API.
-# Read API_BASE_URL from environment or shared settings; do not hard-code secrets.
-# Optionally show an API health status with a short timeout and a helpful error.
-# Do not call unfinished ingestion/chat/experiment endpoints.
-# Acceptance: the UI starts and every page can be opened without a database.
+import streamlit as st
+
+st.set_page_config(page_title="RAG Researcher", page_icon="📚")
+st.title("RAG Researcher")
+st.write("A research workbench for comparing RAG approaches using the Gita.")
+st.info("Phase 1 foundation is ready. Ingestion, chat and experiments are coming in later phases.")
+st.write("Use the sidebar to explore the planned features.")

@@ -1,8 +1,29 @@
-# PHASE 1 — Health endpoints
-# Create an APIRouter with GET /health/live and GET /health/ready.
-# Liveness checks only that the API process responds; it must not query PostgreSQL.
-# Readiness performs the bounded read-only database check from storage/database.py.
-# Return HTTP 200 when ready and HTTP 503 when the database check fails/times out.
-# Return a small JSON body with status; never expose connection details.
-# Do not check models, indexes or LangSmith in Phase 1 because they do not exist yet.
-# Acceptance: test healthy and unavailable database paths plus independent liveness.
+import asyncio
+import logging
+
+from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
+
+from apps.api.dependencies import get_database
+from src.storage.database import Database
+
+router = APIRouter(tags=["health"])
+logger = logging.getLogger(__name__)
+
+
+@router.get("/health/live")
+async def liveness() -> dict[str, str]:
+    return {"status": "alive"}
+
+
+@router.get("/health/ready")
+async def readiness(database: Database = Depends(get_database)) -> JSONResponse:
+    try:
+        ready = await asyncio.wait_for(database.is_ready(), timeout=database.timeout)
+    except Exception:
+        logger.warning("Database readiness check failed")
+        ready = False
+    return JSONResponse(
+        status_code=200 if ready else 503,
+        content={"status": "ready" if ready else "not_ready"},
+    )

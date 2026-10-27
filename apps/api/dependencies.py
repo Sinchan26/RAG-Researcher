@@ -1,6 +1,20 @@
-# PHASE 1 — FastAPI dependencies
-# Expose the settings and async database session through FastAPI dependency injection.
-# Reuse the shared session factory; do not instantiate an engine per request.
-# Ensure sessions close even when a request raises an error.
-# Do not introduce authentication or corpus authorization as completed features.
-# Acceptance: endpoints can request dependencies and tests can override them.
+from collections.abc import AsyncIterator
+
+from fastapi import Request
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.core.config.settings import Settings
+from src.storage.database import Database
+
+
+def get_settings_dependency(request: Request) -> Settings:
+    return request.app.state.settings
+
+
+def get_database(request: Request) -> Database:
+    return request.app.state.database
+
+
+async def get_session(request: Request) -> AsyncIterator[AsyncSession]:
+    async with get_database(request).session() as session:
+        yield session

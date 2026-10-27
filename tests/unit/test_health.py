@@ -1,6 +1,39 @@
-# PHASE 1 — Health route tests
-# Use a FastAPI test client and override/mock the DB readiness check.
-# Verify /health/live returns 200 even when the DB check would fail.
-# Verify /health/ready returns 200 on success and 503 on failure/timeout.
-# Verify error responses omit database credentials.
-# Tests should not require PostgreSQL or any external API.
+import asyncio
+from fastapi.testclient import TestClient
+
+from apps.api.dependencies import get_database
+from apps.api.main import app
+
+
+class FakeDatabase:
+    timeout = 0.02
+
+    def __init__(self, result=True, delay=0, fail=False):
+        self.result, self.delay, self.fail = result, delay, fail
+
+    async def is_ready(self):
+        await asyncio.sleep(self.delay)
+        if self.fail:
+            raise RuntimeError("secret-password")
+        return self.result
+
+
+def test_live_is_independent_from_database():
+    app.dependency_overrides[get_database] = lambda: FakeDatabase(fail=True)
+    try:
+        with TestClient(app) as client:
+            assert client.get("/health/live").status_code == 200
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_readiness_success_failure_and_timeout():
+    try:
+        with TestClient(app) as client:
+            for database, status in [(FakeDatabase(), 200), (FakeDatabase(fail=True), 503), (FakeDatabase(delay=1), 503)]:
+                app.dependency_overrides[get_database] = lambda: database
+                response = client.get("/health/ready")
+                assert response.status_code == status
+                assert "secret-password" not in response.text
+    finally:
+        app.dependency_overrides.clear()

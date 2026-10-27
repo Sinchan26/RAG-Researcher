@@ -1,4 +1,5 @@
-# PHASE 1 — Experiments placeholder
-# Explain that benchmarking and golden-dataset evaluation are planned for Phase 6.
-# Do not display fabricated scores or claim that experiments can run.
-# Match the navigation approach selected in apps/ui/app.py.
+import streamlit as st
+
+st.title("Experiments")
+st.info("Coming in Phase 6")
+st.write("Compare retrieval strategies using a reviewed golden dataset and measured results.")
