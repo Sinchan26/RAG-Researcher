@@ -1,0 +1,21 @@
+# Secrets and environments
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local documents and generated research artifacts
+data/raw/*
+!data/raw/.gitkeep
+data/parsed/*
+!data/parsed/.gitkeep
+data/indexes/*
+!data/indexes/.gitkeep
+data/results/*
+!data/results/.gitkeep
+*.pdf
