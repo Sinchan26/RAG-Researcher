@@ -1,0 +1,7 @@
+-- PHASE 1 — Manual database preparation checklist (comments only)
+-- You create the PostgreSQL database and least-privileged role using pgAdmin or psql.
+-- Install pgvector for your PostgreSQL version; managed services may have restrictions.
+-- Connect to the intended database and, with sufficient privileges, enable the vector
+-- extension. Verify the database and extension before configuring DATABASE_URL.
+-- Keep credentials outside version control. No tables or migrations are needed yet.
+-- Write and execute your own SQL when ready; this file has no executable statements.
